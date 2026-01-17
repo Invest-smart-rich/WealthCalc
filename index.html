@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kalkulatorer – sparing, lønn og utbytte</title>
+  <style>
+    :root { --pad: 16px; --radius: 16px; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#0b0f17; color:#e8eefc; }
+    header { padding: 28px 18px 10px; max-width: 980px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    p { margin: 0; opacity: .9; line-height: 1.35; }
+    main { max-width: 980px; margin: 0 auto; padding: 18px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .card { background: #121a2a; border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); padding: var(--pad); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+    .card h2 { margin: 0 0 10px; font-size: 18px; }
+    label { display:block; font-size: 13px; opacity:.9; margin-top: 10px; }
+    input, select {
+      width: 100%; margin-top: 6px; padding: 10px 12px;
+      border-radius: 12px; border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04); color: #e8eefc; outline: none;
+    }
+    input:focus, select:focus { border-color: rgba(114,180,255,.7); }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btnrow { display:flex; gap: 10px; margin-top: 12px; }
+    button {
+      flex:1; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+      background: rgba(114,180,255,.18); color:#e8eefc; cursor:pointer;
+    }
+    button.secondary { background: rgba(255,255,255,.06); }
+    .out { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.08); }
+    .big { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .small { font-size: 12px; opacity: .85; line-height: 1.35; }
+    footer { max-width: 980px; margin: 0 auto; padding: 10px 18px 28px; opacity:.8; font-size: 12px; }
+    .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>3 kalkulatorer: Investering • Lønn • Utbytte</h1>
+    <p>Ingen innlogging. Ingen data lagres. Kun en enkel måte å regne på tall.</p>
+  </header>
+
+  <main>
+    <!-- Investering -->
+    <section class="card" id="invest-card">
+      <h2>📈 “Hvor rik blir du hvis du investerer X kr/mnd?”</h2>
+
+      <label>Månedlig investering (kr)</label>
+      <input id="inv_monthly" type="number" min="0" step="50" value="1000" />
+
+      <div class="row">
+        <div>
+          <label>Antall år</label>
+          <input id="inv_years" type="number" min="0" step="1" value="10" />
+        </div>
+        <div>
+          <label>Forventet avkastning (% per år)</label>
+          <input id="inv_return" type="number" min="-50" step="0.1" value="7" />
+        </div>
+      </div>
+
+      <label>Startbeløp (kr) (valgfritt)</label>
+      <input id="inv_start" type="number" min="0" step="100" value="0" />
+
+      <div class="btnrow">
+        <button onclick="calcInvestment()">Regn ut</button>
+        <button class="secondary" onclick="resetInvestment()">Reset</button>
+      </div>
+
+      <div class="out" id="inv_out">
+        <div class="big">Klar når du er 👇</div>
+        <div class="small">Tips: prøv 5–10 år og 6–9% avkastning for å få en feel. Dette er bare et estimat.</div>
+      </div>
+    </section>
+
+    <!-- Lønn -->
+    <section class="card" id="wage-card">
+      <h2>💼 “Hvor mye tjener du hvis du jobber X timer?”</h2>
+
+      <div class="row">
+        <div>
+          <label>Timeslønn (kr)</label>
+          <input id="wage_rate" type="number" min="0" step="5" value="190" />
+        </div>
+        <div>
+          <label>Antall timer</label>
+          <input id="wage_hours" type="number" min="0" step="0.5" value="20" />
+        </div>
+      </div>
+
+      <label>Skatt (valgfritt) – skriv f.eks. 20 for 20%</label>
+      <input id="wage_tax" type="number" min="0" max="60" step="0.5" value="0" />
+
+      <div class="btnrow">
+        <button onclick="calcWage()">Regn ut</button>
+        <button class="secondary" onclick="resetWage()">Reset</button>
+      </div>
+
+      <div class="out" id="wage_out">
+        <div class="big">Klar når du er 👇</div>
+        <div class="small">Hvis du ikke vet skatt: sett 0% for brutto, eller 20–30% som grovt estimat.</div>
+      </div>
+    </section>
+
+    <!-- Utbytte -->
+    <section class="card" id="div-card">
+      <h2>🪙 Utbytte-kalkulator</h2>
+
+      <label>Regn med:</label>
+      <select id="div_mode" onchange="toggleDivMode()">
+        <option value="shares" selected>Antall aksjer</option>
+        <option value="amount">Investert beløp (kr) + aksjekurs</option>
+      </select>
+
+      <div id="div_shares_wrap">
+        <label>Antall aksjer</label>
+        <input id="div_shares" type="number" min="0" step="1" value="1000" />
+      </div>
+
+      <div id="div_amount_wrap" style="display:none;">
+        <div class="row">
+          <div>
+            <label>Investert beløp (kr)</label>
+            <input id="div_amount" type="number" min="0" step="100" value="100000" />
+          </div>
+          <div>
+            <label>Aksjekurs (kr)</label>
+            <input id="div_price" type="number" min="0" step="0.1" value="250" />
+          </div>
+        </div>
+        <div class="small" style="margin-top:6px; opacity:.85;">Antall aksjer ≈ investert beløp / aksjekurs (avrundes ned).</div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Utbytte per aksje (kr)</label>
+          <input id="div_per_share" type="number" min="0" step="0.01" value="7" />
+        </div>
+        <div>
+          <label>Utbetalinger per år</label>
+          <input id="div_payments" type="number" min="1" step="1" value="4" />
+        </div>
+      </div>
+
+      <label>Skatt på utbytte (valgfritt, %)</label>
+      <input id="div_tax" type="number" min="0" max="60" step="0.5" value="0" />
+
+      <div class="btnrow">
+        <button onclick="calcDividend()">Regn ut</button>
+        <button class="secondary" onclick="resetDividend()">Reset</button>
+      </div>
+
+      <div class="out" id="div_out">
+        <div class="big">Klar når du er 👇</div>
+        <div class="small">Merk: ekte utbytte varierer, og skatt kan være mer komplisert (aksjesparekonto vs. vanlig konto osv.).</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="pill">📌 Tips</span>
+    Hvis du vil dele dette med andre: legg den på GitHub Pages / Netlify / Vercel og få en link.
+  </footer>
+
+  <script>
+    const fmt = (n) => {
+      if (!isFinite(n)) return "—";
+      return new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(n);
+    };
+
+    function calcInvestment() {
+      const monthly = Number(document.getElementById("inv_monthly").value || 0);
+      const years = Number(document.getElementById("inv_years").value || 0);
+      const r = Number(document.getElementById("inv_return").value || 0) / 100;
+      const start = Number(document.getElementById("inv_start").value || 0);
+
+      const months = Math.max(0, Math.floor(years * 12));
+      const rm = Math.pow(1 + r, 1/12) - 1; // månedlig effektiv rente
+
+      let fv = start * Math.pow(1 + rm, months);
+
+      // Future value of monthly contributions (ordinary annuity, end of month)
+      if (rm === 0) {
+        fv += monthly * months;
+      } else {
+        fv += monthly * ((Math.pow(1 + rm, months) - 1) / rm);
+      }
+
+      const contributed = start + monthly * months;
+      const gain = fv - contributed;
+
+      document.getElementById("inv_out").innerHTML = `
+        <div class="big">Etter ${fmt(years)} år: ca. ${fmt(fv)} kr</div>
+        <div class="small">
+          Innskutt totalt: ${fmt(contributed)} kr<br/>
+          Estimert “vekst”: ${fmt(gain)} kr<br/>
+          Avkastning brukt: ${(r*100).toFixed(1)}%/år (omtrent, månedlig beregning)
+        </div>
+      `;
+    }
+
+    function resetInvestment() {
+      document.getElementById("inv_monthly").value = 1000;
+      document.getElementById("inv_years").value = 10;
+      document.getElementById("inv_return").value = 7;
+      document.getElementById("inv_start").value = 0;
+      document.getElementById("inv_out").innerHTML = `
+        <div class="big">Klar når du er 👇</div>
+        <div class="small">Tips: prøv 5–10 år og 6–9% avkastning for å få en feel. Dette er bare et estimat.</div>
+      `;
+    }
+
+    function calcWage() {
+      const rate = Number(document.getElementById("wage_rate").value || 0);
+      const hours = Number(document.getElementById("wage_hours").value || 0);
+      const tax = Math.min(60, Math.max(0, Number(document.getElementById("wage_tax").value || 0))) / 100;
+
+      const gross = rate * hours;
+      const net = gross * (1 - tax);
+
+      document.getElementById("wage_out").innerHTML = `
+        <div class="big">Brutto: ${fmt(gross)} kr</div>
+        <div class="small">
+          Timeslønn: ${fmt(rate)} kr • Timer: ${hours}<br/>
+          ${tax > 0 ? `Etter ${Math.round(tax*100)}% skatt: <b>${fmt(net)} kr</b>` : `Netto ikke beregnet (skatt = 0%)`}
+        </div>
+      `;
+    }
+
+    function resetWage() {
+      document.getElementById("wage_rate").value = 190;
+      document.getElementById("wage_hours").value = 20;
+      document.getElementById("wage_tax").value = 0;
+      document.getElementById("wage_out").innerHTML = `
+        <div class="big">Klar når du er 👇</div>
+        <div class="small">Hvis du ikke vet skatt: sett 0% for brutto, eller 20–30% som grovt estimat.</div>
+      `;
+    }
+
+    function toggleDivMode() {
+      const mode = document.getElementById("div_mode").value;
+      document.getElementById("div_shares_wrap").style.display = mode === "shares" ? "block" : "none";
+      document.getElementById("div_amount_wrap").style.display = mode === "amount" ? "block" : "none";
+    }
+
+    function calcDividend() {
+      const mode = document.getElementById("div_mode").value;
+
+      let shares = 0;
+      if (mode === "shares") {
+        shares = Math.floor(Number(document.getElementById("div_shares").value || 0));
+      } else {
+        const amount = Number(document.getElementById("div_amount").value || 0);
+        const price = Number(document.getElementById("div_price").value || 0);
+        shares = price > 0 ? Math.floor(amount / price) : 0;
+      }
+
+      const perShare = Number(document.getElementById("div_per_share").value || 0);
+      const payments = Math.max(1, Math.floor(Number(document.getElementById("div_payments").value || 1)));
+      const tax = Math.min(60, Math.max(0, Number(document.getElementById("div_tax").value || 0))) / 100;
+
+      const yearlyGross = shares * perShare;
+      const perPaymentGross = yearlyGross / payments;
+
+      const yearlyNet = yearlyGross * (1 - tax);
+      const perPaymentNet = perPaymentGross * (1 - tax);
+
+      document.getElementById("div_out").innerHTML = `
+        <div class="big">Årlig utbytte: ${fmt(yearlyGross)} kr</div>
+        <div class="small">
+          Aksjer: ${fmt(shares)} • Utbytte/aksje: ${perShare.toFixed(2)} kr<br/>
+          Utbetalinger/år: ${payments} → ca. ${fmt(perPaymentGross)} kr per utbetaling<br/>
+          ${tax > 0 ? `Etter ${Math.round(tax*100)}% skatt: <b>${fmt(yearlyNet)} kr/år</b> (~${fmt(perPaymentNet)} kr per utbetaling)` : `Netto ikke beregnet (skatt = 0%)`}
+        </div>
+      `;
+    }
+
+    function resetDividend() {
+      document.getElementById("div_mode").value = "shares";
+      toggleDivMode();
+      document.getElementById("div_shares").value = 1000;
+      document.getElementById("div_amount").value = 100000;
+      document.getElementById("div_price").value = 250;
+      document.getElementById("div_per_share").value = 7;
+      document.getElementById("div_payments").value = 4;
+      document.getElementById("div_tax").value = 0;
+      document.getElementById("div_out").innerHTML = `
+        <div class="big">Klar når du er 👇</div>
+        <div class="small">Merk: ekte utbytte varierer, og skatt kan være mer komplisert (aksjesparekonto vs. vanlig konto osv.).</div>
+      `;
+    }
+  </script>
+</body>
+</html>
