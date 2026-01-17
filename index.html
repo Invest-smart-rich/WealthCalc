@@ -1,173 +1,587 @@
 <!doctype html>
-<html lang="no">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kalkulatorer – sparing, lønn og utbytte</title>
+  <title>WealthCalc — Invest • Income • Dividends</title>
+  <meta name="description" content="See how rich you’ll be — in seconds. Calculate investing growth, income from hours worked, and dividend payouts with clean, fast calculators. No sign-ups. Just numbers." />
+
   <style>
-    :root { --pad: 16px; --radius: 16px; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#0b0f17; color:#e8eefc; }
-    header { padding: 28px 18px 10px; max-width: 980px; margin: 0 auto; }
-    h1 { margin: 0 0 6px; font-size: 22px; }
-    p { margin: 0; opacity: .9; line-height: 1.35; }
-    main { max-width: 980px; margin: 0 auto; padding: 18px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-    .card { background: #121a2a; border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); padding: var(--pad); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
-    .card h2 { margin: 0 0 10px; font-size: 18px; }
-    label { display:block; font-size: 13px; opacity:.9; margin-top: 10px; }
-    input, select {
-      width: 100%; margin-top: 6px; padding: 10px 12px;
-      border-radius: 12px; border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04); color: #e8eefc; outline: none;
+    :root{
+      --bg0:#070A12;
+      --bg1:#0B1020;
+      --card:#0F1730;
+      --card2:#0C1328;
+      --text:#EAF0FF;
+      --muted:rgba(234,240,255,.72);
+      --muted2:rgba(234,240,255,.55);
+      --line:rgba(255,255,255,.10);
+      --line2:rgba(255,255,255,.16);
+      --accent1:#7CC3FF;
+      --accent2:#A48BFF;
+      --good:#57F0C2;
+      --warn:#FFCD6B;
+      --radius:18px;
+      --shadow: 0 18px 45px rgba(0,0,0,.45);
     }
-    input:focus, select:focus { border-color: rgba(114,180,255,.7); }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .btnrow { display:flex; gap: 10px; margin-top: 12px; }
-    button {
-      flex:1; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
-      background: rgba(114,180,255,.18); color:#e8eefc; cursor:pointer;
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 15% -10%, rgba(124,195,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 85% 0%, rgba(164,139,255,.16), transparent 55%),
+        radial-gradient(700px 420px at 60% 110%, rgba(87,240,194,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
     }
-    button.secondary { background: rgba(255,255,255,.06); }
-    .out { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.08); }
-    .big { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-    .small { font-size: 12px; opacity: .85; line-height: 1.35; }
-    footer { max-width: 980px; margin: 0 auto; padding: 10px 18px 28px; opacity:.8; font-size: 12px; }
-    .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); margin-right: 8px; }
+
+    a{color:inherit; text-decoration:none}
+    .wrap{max-width:1100px; margin:0 auto; padding:22px 18px 40px;}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius: calc(var(--radius) + 4px);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 240px;
+    }
+    .logo{
+      width:40px; height:40px; border-radius:14px;
+      background:
+        radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.55), transparent 55%),
+        linear-gradient(135deg, rgba(124,195,255,.95), rgba(164,139,255,.95));
+      box-shadow: 0 10px 25px rgba(124,195,255,.18);
+      border: 1px solid rgba(255,255,255,.20);
+    }
+    .brand h1{font-size:16px; margin:0; line-height:1.1}
+    .brand p{font-size:12px; margin:2px 0 0; color:var(--muted)}
+
+    .actions{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line2);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+      white-space:nowrap;
+      font-size:13px;
+      color:var(--text);
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08)}
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .btn.primary{
+      border-color: rgba(124,195,255,.40);
+      background: linear-gradient(135deg, rgba(124,195,255,.18), rgba(164,139,255,.16));
+    }
+    .btn.youtube{
+      border-color: rgba(255,255,255,.22);
+      background: linear-gradient(135deg, rgba(255,0,0,.16), rgba(255,255,255,.04));
+    }
+    .btn small{color:var(--muted); font-size:12px}
+
+    .hero{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width: 860px){
+      .hero{grid-template-columns:1fr;}
+      .brand{min-width:auto}
+    }
+
+    .panel{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .inner{padding:18px}
+    .headline{
+      font-size:28px;
+      line-height:1.1;
+      margin:0 0 8px;
+      letter-spacing:-.3px;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+      max-width: 65ch;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+    .chip{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.04);
+      padding:7px 10px;
+      border-radius:999px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      height:100%;
+    }
+    .stat{
+      border:1px solid var(--line);
+      background: rgba(10,14,28,.55);
+      border-radius: 16px;
+      padding:14px;
+    }
+    .stat .k{font-size:12px; color:var(--muted2); margin-bottom:6px}
+    .stat .v{font-size:16px; font-weight:700}
+    .stat .d{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35}
+
+    .nav{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      flex:1;
+      min-width: 220px;
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding:12px 12px;
+      background: rgba(255,255,255,.03);
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .tab:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+    .tab.active{
+      border-color: rgba(124,195,255,.42);
+      background: linear-gradient(135deg, rgba(124,195,255,.14), rgba(164,139,255,.12));
+    }
+    .tab .left{display:flex; flex-direction:column; gap:2px}
+    .tab .title{font-size:13px; font-weight:700}
+    .tab .desc{font-size:12px; color:var(--muted)}
+    .tab .pill{
+      font-size:12px;
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid var(--line2);
+      color:var(--muted);
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+
+    .content{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .calc{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      transform-origin: top;
+    }
+    .calcHeader{
+      padding:16px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .calcHeader h2{margin:0; font-size:16px}
+    .calcHeader p{margin:4px 0 0; font-size:12px; color:var(--muted); line-height:1.35}
+    .calcBody{padding:18px}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 680px){ .grid2{grid-template-columns:1fr} }
+
+    label{display:block; font-size:12px; color:var(--muted); margin-top:10px}
+    input, select{
+      width:100%;
+      margin-top:6px;
+      padding:11px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line2);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      outline:none;
+      transition:border-color .12s ease, background .12s ease;
+    }
+    input:focus, select:focus{
+      border-color: rgba(124,195,255,.70);
+      background: rgba(255,255,255,.06);
+    }
+
+    .btnRow{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .btnWide{flex:1; min-width:220px}
+
+    .out{
+      margin-top:14px;
+      border:1px solid var(--line);
+      background: rgba(10,14,28,.55);
+      border-radius: 16px;
+      padding:14px;
+    }
+    .big{
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:6px;
+      letter-spacing:-.2px;
+    }
+    .small{
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.45;
+    }
+
+    .fadeIn{
+      animation: fadeIn .18s ease-out;
+    }
+    @keyframes fadeIn{
+      from{opacity:0; transform: translateY(6px)}
+      to{opacity:1; transform: translateY(0)}
+    }
+
+    footer{
+      margin-top:16px;
+      color: var(--muted2);
+      font-size:12px;
+      padding: 12px 4px 0;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .note{max-width: 80ch; line-height:1.45}
+    .linkish{color: rgba(124,195,255,.95)}
   </style>
 </head>
+
 <body>
-  <header>
-    <h1>3 kalkulatorer: Investering • Lønn • Utbytte</h1>
-    <p>Ingen innlogging. Ingen data lagres. Kun en enkel måte å regne på tall.</p>
-  </header>
-
-  <main>
-    <!-- Investering -->
-    <section class="card" id="invest-card">
-      <h2>📈 “Hvor rik blir du hvis du investerer X kr/mnd?”</h2>
-
-      <label>Månedlig investering (kr)</label>
-      <input id="inv_monthly" type="number" min="0" step="50" value="1000" />
-
-      <div class="row">
+  <div class="wrap">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
         <div>
-          <label>Antall år</label>
-          <input id="inv_years" type="number" min="0" step="1" value="10" />
-        </div>
-        <div>
-          <label>Forventet avkastning (% per år)</label>
-          <input id="inv_return" type="number" min="-50" step="0.1" value="7" />
+          <h1>WealthCalc</h1>
+          <p>Invest • Income • Dividends</p>
         </div>
       </div>
 
-      <label>Startbeløp (kr) (valgfritt)</label>
-      <input id="inv_start" type="number" min="0" step="100" value="0" />
-
-      <div class="btnrow">
-        <button onclick="calcInvestment()">Regn ut</button>
-        <button class="secondary" onclick="resetInvestment()">Reset</button>
+      <div class="actions">
+        <button class="btn primary" id="btnOpenInvest" type="button" title="Open Investing calculator">
+          📈 <span>Investing</span>
+        </button>
+        <button class="btn" id="btnOpenIncome" type="button" title="Open Income calculator">
+          💼 <span>Income</span>
+        </button>
+        <button class="btn" id="btnOpenDiv" type="button" title="Open Dividend calculator">
+          🪙 <span>Dividends</span>
+        </button>
+        <a class="btn youtube" href="https://www.youtube.com/@TurboTalesnrwy" target="_blank" rel="noopener noreferrer" title="TurboTalesnrwy on YouTube">
+          ▶️ <span>TurboTalesnrwy</span>
+          <small>YouTube</small>
+        </a>
       </div>
+    </div>
 
-      <div class="out" id="inv_out">
-        <div class="big">Klar når du er 👇</div>
-        <div class="small">Tips: prøv 5–10 år og 6–9% avkastning for å få en feel. Dette er bare et estimat.</div>
-      </div>
-    </section>
-
-    <!-- Lønn -->
-    <section class="card" id="wage-card">
-      <h2>💼 “Hvor mye tjener du hvis du jobber X timer?”</h2>
-
-      <div class="row">
-        <div>
-          <label>Timeslønn (kr)</label>
-          <input id="wage_rate" type="number" min="0" step="5" value="190" />
-        </div>
-        <div>
-          <label>Antall timer</label>
-          <input id="wage_hours" type="number" min="0" step="0.5" value="20" />
-        </div>
-      </div>
-
-      <label>Skatt (valgfritt) – skriv f.eks. 20 for 20%</label>
-      <input id="wage_tax" type="number" min="0" max="60" step="0.5" value="0" />
-
-      <div class="btnrow">
-        <button onclick="calcWage()">Regn ut</button>
-        <button class="secondary" onclick="resetWage()">Reset</button>
-      </div>
-
-      <div class="out" id="wage_out">
-        <div class="big">Klar når du er 👇</div>
-        <div class="small">Hvis du ikke vet skatt: sett 0% for brutto, eller 20–30% som grovt estimat.</div>
-      </div>
-    </section>
-
-    <!-- Utbytte -->
-    <section class="card" id="div-card">
-      <h2>🪙 Utbytte-kalkulator</h2>
-
-      <label>Regn med:</label>
-      <select id="div_mode" onchange="toggleDivMode()">
-        <option value="shares" selected>Antall aksjer</option>
-        <option value="amount">Investert beløp (kr) + aksjekurs</option>
-      </select>
-
-      <div id="div_shares_wrap">
-        <label>Antall aksjer</label>
-        <input id="div_shares" type="number" min="0" step="1" value="1000" />
-      </div>
-
-      <div id="div_amount_wrap" style="display:none;">
-        <div class="row">
-          <div>
-            <label>Investert beløp (kr)</label>
-            <input id="div_amount" type="number" min="0" step="100" value="100000" />
+    <!-- Hero -->
+    <div class="hero">
+      <div class="panel">
+        <div class="inner">
+          <h2 class="headline">See how rich you’ll be — in seconds.</h2>
+          <p class="sub">
+            Three clean calculators in one place: growth from monthly investing, income from hours worked, and dividend payouts.
+            No sign-ups. No tracking. Just numbers.
+          </p>
+          <div class="chips">
+            <span class="chip">Fast</span>
+            <span class="chip">Simple</span>
+            <span class="chip">Mobile-friendly</span>
+            <span class="chip">One-page</span>
           </div>
-          <div>
-            <label>Aksjekurs (kr)</label>
-            <input id="div_price" type="number" min="0" step="0.1" value="250" />
+
+          <div class="nav" style="margin-top:14px;">
+            <button class="tab active" type="button" data-target="invest">
+              <div class="left">
+                <div class="title">📈 Investing Growth</div>
+                <div class="desc">Monthly investing → future value</div>
+              </div>
+              <div class="pill">Start here</div>
+            </button>
+            <button class="tab" type="button" data-target="income">
+              <div class="left">
+                <div class="title">💼 Income</div>
+                <div class="desc">Hours × rate (optional tax)</div>
+              </div>
+              <div class="pill">Quick</div>
+            </button>
+            <button class="tab" type="button" data-target="div">
+              <div class="left">
+                <div class="title">🪙 Dividends</div>
+                <div class="desc">Per share → per year & payout</div>
+              </div>
+              <div class="pill">Passive</div>
+            </button>
           </div>
         </div>
-        <div class="small" style="margin-top:6px; opacity:.85;">Antall aksjer ≈ investert beløp / aksjekurs (avrundes ned).</div>
       </div>
 
-      <div class="row">
-        <div>
-          <label>Utbytte per aksje (kr)</label>
-          <input id="div_per_share" type="number" min="0" step="0.01" value="7" />
+      <div class="panel">
+        <div class="inner">
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Tip</div>
+              <div class="v">Try 10 years @ 7%</div>
+              <div class="d">Good “average” estimate for long-term index investing (still not guaranteed).</div>
+            </div>
+            <div class="stat">
+              <div class="k">Privacy</div>
+              <div class="v">No tracking</div>
+              <div class="d">Everything runs in your browser. Nothing is saved.</div>
+            </div>
+            <div class="stat">
+              <div class="k">Speed</div>
+              <div class="v">Instant results</div>
+              <div class="d">Clean math + simple input.</div>
+            </div>
+            <div class="stat">
+              <div class="k">Creator</div>
+              <div class="v">TurboTalesnrwy</div>
+              <div class="d">Built by a car-content creator who also loves money math.</div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label>Utbetalinger per år</label>
-          <input id="div_payments" type="number" min="1" step="1" value="4" />
+      </div>
+    </div>
+
+    <!-- Calculators -->
+    <div class="content">
+
+      <!-- Investing -->
+      <section class="calc fadeIn" id="calc-invest">
+        <div class="calcHeader">
+          <div>
+            <h2>📈 Investing Growth</h2>
+            <p>Estimate how much your money can grow with monthly investing and compounding.</p>
+          </div>
+          <div class="chip" title="Not financial advice">Estimates only</div>
         </div>
+
+        <div class="calcBody">
+          <label>Monthly investment (USD / NOK — your choice)</label>
+          <input id="inv_monthly" type="number" min="0" step="50" value="1000" />
+
+          <div class="grid2">
+            <div>
+              <label>Years</label>
+              <input id="inv_years" type="number" min="0" step="1" value="10" />
+            </div>
+            <div>
+              <label>Expected return (% per year)</label>
+              <input id="inv_return" type="number" min="-50" step="0.1" value="7" />
+            </div>
+          </div>
+
+          <label>Starting amount (optional)</label>
+          <input id="inv_start" type="number" min="0" step="100" value="0" />
+
+          <div class="btnRow">
+            <button class="btn primary btnWide" type="button" onclick="calcInvestment()">Calculate</button>
+            <button class="btn btnWide" type="button" onclick="resetInvestment()">Reset</button>
+          </div>
+
+          <div class="out" id="inv_out">
+            <div class="big">Ready when you are 👇</div>
+            <div class="small">This is a simple estimate using monthly compounding. Real returns vary.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Income -->
+      <section class="calc" id="calc-income" style="display:none;">
+        <div class="calcHeader">
+          <div>
+            <h2>💼 Income</h2>
+            <p>Calculate gross pay (and optionally estimate net pay after tax).</p>
+          </div>
+          <div class="chip">Fast check</div>
+        </div>
+
+        <div class="calcBody">
+          <div class="grid2">
+            <div>
+              <label>Hourly rate</label>
+              <input id="wage_rate" type="number" min="0" step="5" value="190" />
+            </div>
+            <div>
+              <label>Hours worked</label>
+              <input id="wage_hours" type="number" min="0" step="0.5" value="20" />
+            </div>
+          </div>
+
+          <label>Tax (optional) — e.g. 20 for 20%</label>
+          <input id="wage_tax" type="number" min="0" max="60" step="0.5" value="0" />
+
+          <div class="btnRow">
+            <button class="btn primary btnWide" type="button" onclick="calcWage()">Calculate</button>
+            <button class="btn btnWide" type="button" onclick="resetWage()">Reset</button>
+          </div>
+
+          <div class="out" id="wage_out">
+            <div class="big">Ready when you are 👇</div>
+            <div class="small">If you’re unsure about tax, set 0% for gross, or try 20–30% as a rough estimate.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dividends -->
+      <section class="calc" id="calc-div" style="display:none;">
+        <div class="calcHeader">
+          <div>
+            <h2>🪙 Dividends</h2>
+            <p>Estimate dividend income per year and per payout.</p>
+          </div>
+          <div class="chip">Passive income</div>
+        </div>
+
+        <div class="calcBody">
+          <label>Calculate using</label>
+          <select id="div_mode" onchange="toggleDivMode()">
+            <option value="shares" selected>Number of shares</option>
+            <option value="amount">Invested amount + share price</option>
+          </select>
+
+          <div id="div_shares_wrap">
+            <label>Number of shares</label>
+            <input id="div_shares" type="number" min="0" step="1" value="1000" />
+          </div>
+
+          <div id="div_amount_wrap" style="display:none;">
+            <div class="grid2">
+              <div>
+                <label>Invested amount</label>
+                <input id="div_amount" type="number" min="0" step="100" value="100000" />
+              </div>
+              <div>
+                <label>Share price</label>
+                <input id="div_price" type="number" min="0" step="0.1" value="250" />
+              </div>
+            </div>
+            <div class="small" style="margin-top:8px;">Shares ≈ invested amount / share price (rounded down).</div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label>Dividend per share (per year)</label>
+              <input id="div_per_share" type="number" min="0" step="0.01" value="7" />
+            </div>
+            <div>
+              <label>Payouts per year</label>
+              <input id="div_payments" type="number" min="1" step="1" value="4" />
+            </div>
+          </div>
+
+          <label>Tax on dividends (optional, %)</label>
+          <input id="div_tax" type="number" min="0" max="60" step="0.5" value="0" />
+
+          <div class="btnRow">
+            <button class="btn primary btnWide" type="button" onclick="calcDividend()">Calculate</button>
+            <button class="btn btnWide" type="button" onclick="resetDividend()">Reset</button>
+          </div>
+
+          <div class="out" id="div_out">
+            <div class="big">Ready when you are 👇</div>
+            <div class="small">Dividends can change, and taxes depend on your account type & country. This is an estimate.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div class="note">
+        <span class="linkish">WealthCalc</span> runs fully in your browser — no logins, no tracking.
+        Estimates only (not financial advice).
       </div>
-
-      <label>Skatt på utbytte (valgfritt, %)</label>
-      <input id="div_tax" type="number" min="0" max="60" step="0.5" value="0" />
-
-      <div class="btnrow">
-        <button onclick="calcDividend()">Regn ut</button>
-        <button class="secondary" onclick="resetDividend()">Reset</button>
+      <div>
+        Built by <a class="linkish" href="https://www.youtube.com/@TurboTalesnrwy" target="_blank" rel="noopener noreferrer">TurboTalesnrwy</a>
       </div>
-
-      <div class="out" id="div_out">
-        <div class="big">Klar når du er 👇</div>
-        <div class="small">Merk: ekte utbytte varierer, og skatt kan være mer komplisert (aksjesparekonto vs. vanlig konto osv.).</div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <span class="pill">📌 Tips</span>
-    Hvis du vil dele dette med andre: legg den på GitHub Pages / Netlify / Vercel og få en link.
-  </footer>
+    </footer>
+  </div>
 
   <script>
+    // ---------- Helpers ----------
     const fmt = (n) => {
       if (!isFinite(n)) return "—";
-      return new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(n);
+      return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
     };
 
+    // ---------- Navigation ----------
+    const tabs = document.querySelectorAll(".tab");
+    const sections = {
+      invest: document.getElementById("calc-invest"),
+      income: document.getElementById("calc-income"),
+      div: document.getElementById("calc-div"),
+    };
+
+    function showCalc(which){
+      // tabs
+      tabs.forEach(t => t.classList.toggle("active", t.dataset.target === which));
+
+      // sections
+      Object.entries(sections).forEach(([key, el]) => {
+        el.style.display = (key === which) ? "block" : "none";
+        if (key === which) {
+          el.classList.remove("fadeIn");
+          // re-trigger animation
+          void el.offsetWidth;
+          el.classList.add("fadeIn");
+          // scroll into view smoothly (nice UX)
+          el.scrollIntoView({ behavior:"smooth", block:"start" });
+        }
+      });
+    }
+
+    tabs.forEach(t => t.addEventListener("click", () => showCalc(t.dataset.target)));
+
+    // Top buttons
+    document.getElementById("btnOpenInvest").addEventListener("click", () => showCalc("invest"));
+    document.getElementById("btnOpenIncome").addEventListener("click", () => showCalc("income"));
+    document.getElementById("btnOpenDiv").addEventListener("click", () => showCalc("div"));
+
+    // ---------- Investing ----------
     function calcInvestment() {
       const monthly = Number(document.getElementById("inv_monthly").value || 0);
       const years = Number(document.getElementById("inv_years").value || 0);
@@ -175,11 +589,10 @@
       const start = Number(document.getElementById("inv_start").value || 0);
 
       const months = Math.max(0, Math.floor(years * 12));
-      const rm = Math.pow(1 + r, 1/12) - 1; // månedlig effektiv rente
+      const rm = Math.pow(1 + r, 1/12) - 1; // effective monthly rate
 
       let fv = start * Math.pow(1 + rm, months);
 
-      // Future value of monthly contributions (ordinary annuity, end of month)
       if (rm === 0) {
         fv += monthly * months;
       } else {
@@ -190,13 +603,14 @@
       const gain = fv - contributed;
 
       document.getElementById("inv_out").innerHTML = `
-        <div class="big">Etter ${fmt(years)} år: ca. ${fmt(fv)} kr</div>
+        <div class="big">After ${fmt(years)} years: ~ ${fmt(fv)}</div>
         <div class="small">
-          Innskutt totalt: ${fmt(contributed)} kr<br/>
-          Estimert “vekst”: ${fmt(gain)} kr<br/>
-          Avkastning brukt: ${(r*100).toFixed(1)}%/år (omtrent, månedlig beregning)
+          Total contributed: ${fmt(contributed)}<br/>
+          Estimated growth: ${fmt(gain)}<br/>
+          Return used: ${(r*100).toFixed(1)}% / year (approx. monthly compounding)
         </div>
       `;
+      // update hero stats vibe? (optional)
     }
 
     function resetInvestment() {
@@ -205,24 +619,26 @@
       document.getElementById("inv_return").value = 7;
       document.getElementById("inv_start").value = 0;
       document.getElementById("inv_out").innerHTML = `
-        <div class="big">Klar når du er 👇</div>
-        <div class="small">Tips: prøv 5–10 år og 6–9% avkastning for å få en feel. Dette er bare et estimat.</div>
+        <div class="big">Ready when you are 👇</div>
+        <div class="small">This is a simple estimate using monthly compounding. Real returns vary.</div>
       `;
     }
 
+    // ---------- Income ----------
     function calcWage() {
       const rate = Number(document.getElementById("wage_rate").value || 0);
       const hours = Number(document.getElementById("wage_hours").value || 0);
-      const tax = Math.min(60, Math.max(0, Number(document.getElementById("wage_tax").value || 0))) / 100;
+      const taxPct = Math.min(60, Math.max(0, Number(document.getElementById("wage_tax").value || 0)));
+      const tax = taxPct / 100;
 
       const gross = rate * hours;
       const net = gross * (1 - tax);
 
       document.getElementById("wage_out").innerHTML = `
-        <div class="big">Brutto: ${fmt(gross)} kr</div>
+        <div class="big">Gross pay: ${fmt(gross)}</div>
         <div class="small">
-          Timeslønn: ${fmt(rate)} kr • Timer: ${hours}<br/>
-          ${tax > 0 ? `Etter ${Math.round(tax*100)}% skatt: <b>${fmt(net)} kr</b>` : `Netto ikke beregnet (skatt = 0%)`}
+          Hourly rate: ${fmt(rate)} • Hours: ${hours}<br/>
+          ${taxPct > 0 ? `After ${Math.round(taxPct)}% tax: <b>${fmt(net)}</b>` : `Net not calculated (tax = 0%).`}
         </div>
       `;
     }
@@ -232,11 +648,12 @@
       document.getElementById("wage_hours").value = 20;
       document.getElementById("wage_tax").value = 0;
       document.getElementById("wage_out").innerHTML = `
-        <div class="big">Klar når du er 👇</div>
-        <div class="small">Hvis du ikke vet skatt: sett 0% for brutto, eller 20–30% som grovt estimat.</div>
+        <div class="big">Ready when you are 👇</div>
+        <div class="small">If you’re unsure about tax, set 0% for gross, or try 20–30% as a rough estimate.</div>
       `;
     }
 
+    // ---------- Dividends ----------
     function toggleDivMode() {
       const mode = document.getElementById("div_mode").value;
       document.getElementById("div_shares_wrap").style.display = mode === "shares" ? "block" : "none";
@@ -257,7 +674,8 @@
 
       const perShare = Number(document.getElementById("div_per_share").value || 0);
       const payments = Math.max(1, Math.floor(Number(document.getElementById("div_payments").value || 1)));
-      const tax = Math.min(60, Math.max(0, Number(document.getElementById("div_tax").value || 0))) / 100;
+      const taxPct = Math.min(60, Math.max(0, Number(document.getElementById("div_tax").value || 0)));
+      const tax = taxPct / 100;
 
       const yearlyGross = shares * perShare;
       const perPaymentGross = yearlyGross / payments;
@@ -266,11 +684,11 @@
       const perPaymentNet = perPaymentGross * (1 - tax);
 
       document.getElementById("div_out").innerHTML = `
-        <div class="big">Årlig utbytte: ${fmt(yearlyGross)} kr</div>
+        <div class="big">Yearly dividends: ${fmt(yearlyGross)}</div>
         <div class="small">
-          Aksjer: ${fmt(shares)} • Utbytte/aksje: ${perShare.toFixed(2)} kr<br/>
-          Utbetalinger/år: ${payments} → ca. ${fmt(perPaymentGross)} kr per utbetaling<br/>
-          ${tax > 0 ? `Etter ${Math.round(tax*100)}% skatt: <b>${fmt(yearlyNet)} kr/år</b> (~${fmt(perPaymentNet)} kr per utbetaling)` : `Netto ikke beregnet (skatt = 0%)`}
+          Shares: ${fmt(shares)} • Dividend/share: ${perShare.toFixed(2)}<br/>
+          Payouts/year: ${payments} → ~ ${fmt(perPaymentGross)} per payout<br/>
+          ${taxPct > 0 ? `After ${Math.round(taxPct)}% tax: <b>${fmt(yearlyNet)}</b> / year (~${fmt(perPaymentNet)} per payout)` : `Net not calculated (tax = 0%).`}
         </div>
       `;
     }
@@ -284,11 +702,29 @@
       document.getElementById("div_per_share").value = 7;
       document.getElementById("div_payments").value = 4;
       document.getElementById("div_tax").value = 0;
+
       document.getElementById("div_out").innerHTML = `
-        <div class="big">Klar når du er 👇</div>
-        <div class="small">Merk: ekte utbytte varierer, og skatt kan være mer komplisert (aksjesparekonto vs. vanlig konto osv.).</div>
+        <div class="big">Ready when you are 👇</div>
+        <div class="small">Dividends can change, and taxes depend on your account type & country. This is an estimate.</div>
       `;
     }
+
+    // Expose functions for onclick
+    window.calcInvestment = calcInvestment;
+    window.resetInvestment = resetInvestment;
+    window.calcWage = calcWage;
+    window.resetWage = resetWage;
+    window.toggleDivMode = toggleDivMode;
+    window.calcDividend = calcDividend;
+    window.resetDividend = resetDividend;
+
+    // optional: support URL hash navigation
+    function loadFromHash(){
+      const h = (location.hash || "").replace("#","").trim();
+      if (h === "income" || h === "div" || h === "invest") showCalc(h);
+    }
+    window.addEventListener("hashchange", loadFromHash);
+    loadFromHash();
   </script>
 </body>
 </html>
